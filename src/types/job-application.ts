@@ -9,6 +9,8 @@ export interface JobApplication {
   application_date: string;
   status: JobStatus;
   notes: string | null;
+  follow_up_date: string | null;
+  user_id: string;
   created_at: string;
   updated_at: string;
 }
@@ -20,4 +22,5 @@ export interface JobApplicationFormData {
   application_date: string;
   status: JobStatus;
   notes: string;
+  follow_up_date: string;
 }

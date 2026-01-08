@@ -9,9 +9,13 @@ export const useJobApplications = () => {
   const { data: applications = [], isLoading, error } = useQuery({
     queryKey: ['job-applications'],
     queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
+      
       const { data, error } = await supabase
         .from('job_applications')
         .select('*')
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
       
       if (error) throw error;
@@ -21,9 +25,16 @@ export const useJobApplications = () => {
 
   const addApplication = useMutation({
     mutationFn: async (formData: JobApplicationFormData) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+      
       const { data, error } = await supabase
         .from('job_applications')
-        .insert([formData])
+        .insert([{
+          ...formData,
+          user_id: user.id,
+          follow_up_date: formData.follow_up_date || null,
+        }])
         .select()
         .single();
       
@@ -43,7 +54,10 @@ export const useJobApplications = () => {
     mutationFn: async ({ id, ...formData }: JobApplicationFormData & { id: string }) => {
       const { data, error } = await supabase
         .from('job_applications')
-        .update(formData)
+        .update({
+          ...formData,
+          follow_up_date: formData.follow_up_date || null,
+        })
         .eq('id', id)
         .select()
         .single();
