@@ -1,16 +1,23 @@
 import { useState, useMemo } from 'react';
-import { Plus, FileText, Send, CalendarCheck, Trophy, XCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Plus, FileText, Send, CalendarCheck, Trophy, XCircle, BarChart3, Clock, Download, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { StatCard } from '@/components/StatCard';
 import { FilterBar } from '@/components/FilterBar';
 import { JobApplicationCard } from '@/components/JobApplicationCard';
 import { JobApplicationForm } from '@/components/JobApplicationForm';
 import { EmptyState } from '@/components/EmptyState';
+import { FollowUpReminder } from '@/components/FollowUpReminder';
 import { useJobApplications } from '@/hooks/useJobApplications';
+import { useAuth } from '@/hooks/useAuth';
+import { exportToCSV } from '@/utils/exportToCsv';
 import { JobApplication, JobApplicationFormData, JobStatus, JobType } from '@/types/job-application';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { toast } from 'sonner';
 
 const Index = () => {
+  const navigate = useNavigate();
+  const { user, signOut } = useAuth();
   const { applications, isLoading, addApplication, updateApplication, deleteApplication } = useJobApplications();
   
   const [formOpen, setFormOpen] = useState(false);
@@ -81,6 +88,20 @@ const Index = () => {
     setTypeFilter('all');
   };
 
+  const handleExport = () => {
+    if (applications.length === 0) {
+      toast.error('No applications to export');
+      return;
+    }
+    exportToCSV(applications);
+    toast.success('Applications exported successfully!');
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    toast.success('Signed out successfully');
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -93,19 +114,41 @@ const Index = () => {
               </div>
               <div>
                 <h1 className="text-xl font-bold">Job Tracker</h1>
-                <p className="text-sm text-muted-foreground hidden sm:block">Track your job applications</p>
+                <p className="text-sm text-muted-foreground hidden sm:block">{user?.email}</p>
               </div>
             </div>
-            <Button onClick={() => { setEditingApplication(null); setFormOpen(true); }}>
-              <Plus className="h-4 w-4 mr-2" />
-              <span className="hidden sm:inline">Add Application</span>
-              <span className="sm:hidden">Add</span>
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={() => navigate('/analytics')}>
+                <BarChart3 className="h-4 w-4 mr-2" />
+                <span className="hidden sm:inline">Analytics</span>
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => navigate('/timeline')}>
+                <Clock className="h-4 w-4 mr-2" />
+                <span className="hidden sm:inline">Timeline</span>
+              </Button>
+              <Button variant="outline" size="sm" onClick={handleExport}>
+                <Download className="h-4 w-4 mr-2" />
+                <span className="hidden sm:inline">Export</span>
+              </Button>
+              <Button variant="ghost" size="icon" onClick={handleSignOut}>
+                <LogOut className="h-4 w-4" />
+              </Button>
+              <Button onClick={() => { setEditingApplication(null); setFormOpen(true); }}>
+                <Plus className="h-4 w-4 mr-2" />
+                <span className="hidden sm:inline">Add Application</span>
+                <span className="sm:hidden">Add</span>
+              </Button>
+            </div>
           </div>
         </div>
       </header>
 
       <main className="container max-w-6xl mx-auto px-4 py-8">
+        {/* Follow-up Reminders */}
+        <div className="mb-6">
+          <FollowUpReminder applications={applications} />
+        </div>
+
         {/* Stats Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
           <StatCard title="Total" value={stats.total} icon={FileText} variant="total" />

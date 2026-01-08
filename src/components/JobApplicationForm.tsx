@@ -22,6 +22,7 @@ const initialFormData: JobApplicationFormData = {
   application_date: new Date().toISOString().split('T')[0],
   status: 'Applied',
   notes: '',
+  follow_up_date: '',
 };
 
 export const JobApplicationForm = ({
@@ -42,6 +43,7 @@ export const JobApplicationForm = ({
         application_date: editingApplication.application_date,
         status: editingApplication.status,
         notes: editingApplication.notes || '',
+        follow_up_date: editingApplication.follow_up_date || '',
       });
     } else {
       setFormData(initialFormData);
@@ -113,22 +115,33 @@ export const JobApplicationForm = ({
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="status">Status</Label>
-            <Select
-              value={formData.status}
-              onValueChange={(value: JobStatus) => setFormData({ ...formData, status: value })}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Applied">Applied</SelectItem>
-                <SelectItem value="Interview">Interview</SelectItem>
-                <SelectItem value="Offer">Offer</SelectItem>
-                <SelectItem value="Rejected">Rejected</SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="status">Status</Label>
+              <Select
+                value={formData.status}
+                onValueChange={(value: JobStatus) => setFormData({ ...formData, status: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Applied">Applied</SelectItem>
+                  <SelectItem value="Interview">Interview</SelectItem>
+                  <SelectItem value="Offer">Offer</SelectItem>
+                  <SelectItem value="Rejected">Rejected</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="follow_up_date">Follow-up Date (Optional)</Label>
+              <Input
+                id="follow_up_date"
+                type="date"
+                value={formData.follow_up_date}
+                onChange={(e) => setFormData({ ...formData, follow_up_date: e.target.value })}
+              />
+            </div>
           </div>
 
           <div className="space-y-2">
